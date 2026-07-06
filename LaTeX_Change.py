@@ -9,7 +9,7 @@ def convert_latex_to_plain():
     text = re.sub(r'\\\[|\\\]|\\\(|\\\)', '', text)
     text = text.replace('$', '')
 
-    # 2. LaTeXコマンドを通常の記号に置換（超拡張版）
+    # 2. LaTeXコマンドを通常の記号に置換（le/ge などを追加・不等号を「≤」に統一）
     replacements = {
         # ギリシャ文字 (小文字)
         r'\alpha': 'α', r'\beta': 'β', r'\gamma': 'γ', r'\delta': 'δ', r'\epsilon': 'ε', r'\varepsilon': 'ε',
@@ -22,9 +22,9 @@ def convert_latex_to_plain():
         r'\Gamma': 'Γ', r'\Delta': 'Δ', r'\Theta': 'Θ', r'\Lambda': 'Λ', r'\Xi': 'Ξ',
         r'\Pi': 'Π', r'\Sigma': 'Σ', r'\Upsilon': 'Υ', r'\Phi': 'Φ', r'\Psi': 'Ψ', r'\Omega': 'Ω',
         
-        # 演算子・数学記号
+        # 演算子・数学記号（le, ge などを追加）
         r'\times': '×', r'\div': '÷', r'\pm': '±', r'\mp': '∓', r'\cdot': '・', r'\ast': '＊', r'\circ': '∘',
-        r'\neq': '≠', r'\leq': '≦', r'\geq': '≧', r'\ll': '≪', r'\gg': '≫',
+        r'\neq': '≠', r'\leq': '≤', r'\le': '≤', r'\geq': '≥', r'\ge': '≥', r'\ll': '≪', r'\gg': '≫',
         r'\approx': '≈', r'\simeq': '≃', r'\equiv': '≡', r'\sim': '〜', r'\propto': '∝',
         
         # 集合・論理記号
@@ -45,7 +45,7 @@ def convert_latex_to_plain():
     for latex_cmd in sorted(replacements.keys(), key=len, reverse=True):
         text = text.replace(latex_cmd, replacements[latex_cmd])
 
-    # 3. \text{...} や \mathrm{...} のブロックを解除（空白が含まれているケースも考慮）
+    # 3. \text{...} や \mathrm{...} のブロックを解除
     text = re.sub(r'\\text\s*\{([^}]+)\}', r'\1', text)
     text = re.sub(r'\\mathrm\s*\{([^}]+)\}', r'\1', text)
     text = re.sub(r'\\mathbf\s*\{([^}]+)\}', r'\1', text)
@@ -57,19 +57,22 @@ def convert_latex_to_plain():
     text = re.sub(r'\^\s*\{([^}]+)\}', r'^\1', text)
     text = re.sub(r'_\s*\{([^}]+)\}', r'_\1', text)
 
-    # 6. 余ったバックスラッシュ(\)をすべて消去
+    # 6. アンダースコア（下付き記号）を半角スペースに置換
+    text = text.replace('_', ' ')
+
+    # 7. 余ったバックスラッシュ(\)をすべて消去
     text = text.replace('\\', '')
     
-    # 7. 変換しきれなかった波カッコ { } が残ってしまった場合のお掃除
+    # 8. 変換しきれなかった波カッコ { } が残ってしまった場合のお掃除
     text = text.replace('{', '').replace('}', '')
 
-    # 8. 連続する空白を1つにまとめ、前後の空白を消す
+    # 9. 連続する空白を1つにまとめ、前後の空白を消す
     text = re.sub(r'\s+', ' ', text).strip()
 
     # 整形したテキストをクリップボードに戻す
     pyperclip.copy(text)
 
-    print("以下のテキストとしてクリップボードを更新しました:\n")
+    print("以下のテキストとしてクリップボードを更新しました：\n")
     print(text)
 
 if __name__ == "__main__":
